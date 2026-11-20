@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReservaYa · Gestión de reservas de canchas</title>
+  <meta name="description" content="CRUD de reservas de canchas deportivas construido con HTML, CSS y JavaScript sin librerías.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230E3B2E'/><text x='50' y='68' font-size='44' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='%23C8F24D'>R</text></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+  <header class="cabecera">
+    <div class="contenedor cabecera__fila">
+      <div class="marca">
+        <span class="marca__logo" aria-hidden="true">R</span>
+        <div>
+          <p class="marca__nombre">ReservaYa</p>
+          <p class="marca__lema">Gestión de reservas de canchas</p>
+        </div>
+      </div>
+      <button id="btn-nueva" class="boton boton--primario" type="button">
+        <span aria-hidden="true">+</span> Nueva reserva
+      </button>
+    </div>
+  </header>
+
+  <main id="contenido" class="contenedor">
+
+    <section class="resumen" aria-label="Resumen de reservas">
+      <article class="tarjeta-dato">
+        <p class="tarjeta-dato__etiqueta">Reservas</p>
+        <p class="tarjeta-dato__valor" id="stat-total">0</p>
+      </article>
+      <article class="tarjeta-dato">
+        <p class="tarjeta-dato__etiqueta">Pendientes</p>
+        <p class="tarjeta-dato__valor" id="stat-pendientes">0</p>
+      </article>
+      <article class="tarjeta-dato">
+        <p class="tarjeta-dato__etiqueta">Pagadas</p>
+        <p class="tarjeta-dato__valor" id="stat-pagadas">0</p>
+      </article>
+      <article class="tarjeta-dato">
+        <p class="tarjeta-dato__etiqueta">Ingresos estimados</p>
+        <p class="tarjeta-dato__valor" id="stat-ingresos">$0</p>
+      </article>
+    </section>
+
+    <section class="panel" aria-label="Listado de reservas">
+      <div class="barra">
+        <div class="campo-busqueda">
+          <label class="visualmente-oculto" for="buscar">Buscar reserva</label>
+          <input id="buscar" type="search" placeholder="Buscar por cliente, teléfono o cancha…" autocomplete="off">
+        </div>
+
+        <div class="barra__filtros">
+          <label class="visualmente-oculto" for="filtro-estado">Filtrar por estado</label>
+          <select id="filtro-estado">
+            <option value="">Todos los estados</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="Pagada">Pagada</option>
+            <option value="Cancelada">Cancelada</option>
+          </select>
+
+          <label class="visualmente-oculto" for="ordenar">Ordenar</label>
+          <select id="ordenar">
+            <option value="fecha-asc">Fecha: próxima primero</option>
+            <option value="fecha-desc">Fecha: lejana primero</option>
+            <option value="cliente">Cliente (A–Z)</option>
+            <option value="cancha">Cancha</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="contador" id="contador" role="status" aria-live="polite"></p>
+
+      <div class="tabla-envoltura">
+        <table class="tabla" id="tabla">
+          <caption class="visualmente-oculto">Listado de reservas registradas</caption>
+          <thead>
+            <tr>
+              <th scope="col">Cliente</th>
+              <th scope="col">Cancha</th>
+              <th scope="col">Fecha</th>
+              <th scope="col">Hora</th>
+              <th scope="col">Duración</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Total</th>
+              <th scope="col"><span class="visualmente-oculto">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo-tabla"></tbody>
+        </table>
+      </div>
+
+      <div id="vacio" class="vacio" hidden>
+        <p class="vacio__titulo">Aún no hay reservas</p>
+        <p class="vacio__texto">Crea la primera con el botón <strong>Nueva reserva</strong> o ajusta los filtros si esperabas ver algo aquí.</p>
+        <button class="boton boton--secundario" type="button" data-abrir-formulario>Crear reserva</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor pie__fila">
+      <p>ReservaYa · CRUD académico con HTML, CSS y JavaScript</p>
+      <p id="pie-almacenamiento" class="pie__nota"></p>
+    </div>
+  </footer>
+
+  <!-- ---------------------------------------------------------- Modal formulario -->
+  <div class="modal" id="modal-formulario" hidden>
+    <div class="modal__fondo" data-cerrar-modal></div>
+    <div class="modal__caja" role="dialog" aria-modal="true" aria-labelledby="titulo-formulario">
+      <header class="modal__cabecera">
+        <h2 id="titulo-formulario">Nueva reserva</h2>
+        <button class="icono-boton" type="button" data-cerrar-modal aria-label="Cerrar formulario">✕</button>
+      </header>
+
+      <form id="formulario" novalidate>
+        <input type="hidden" id="id" name="id">
+
+        <div class="rejilla">
+          <div class="campo">
+            <label for="cliente">Cliente <span class="obligatorio" aria-hidden="true">*</span></label>
+            <input id="cliente" name="cliente" type="text" autocomplete="name" placeholder="Nombre completo">
+            <p class="campo__error" id="error-cliente" role="alert"></p>
+          </div>
+
+          <div class="campo">
+            <label for="telefono">Teléfono <span class="obligatorio" aria-hidden="true">*</span></label>
+            <input id="telefono" name="telefono" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10 dígitos">
+            <p class="campo__error" id="error-telefono" role="alert"></p>
+          </div>
+
+          <div class="campo">
+            <label for="cancha">Cancha <span class="obligatorio" aria-hidden="true">*</span></label>
+            <select id="cancha" name="cancha">
+              <option value="">Selecciona una cancha</option>
+              <option value="Cancha 1 · Fútbol 5">Cancha 1 · Fútbol 5</option>
+              <option value="Cancha 2 · Fútbol 5">Cancha 2 · Fútbol 5</option>
+              <option value="Cancha 3 · Fútbol 7">Cancha 3 · Fútbol 7</option>
+              <option value="Cancha 4 · Fútbol 7">Cancha 4 · Fútbol 7</option>
+            </select>
+            <p class="campo__error" id="error-cancha" role="alert"></p>
+          </div>
+
+          <div class="campo">
+            <label for="fecha">Fecha <span class="obligatorio" aria-hidden="true">*</span></label>
+            <input id="fecha" name="fecha" type="date">
+            <p class="campo__error" id="error-fecha" role="alert"></p>
+          </div>
+
+          <div class="campo">
+            <label for="hora">Hora de inicio <span class="obligatorio" aria-hidden="true">*</span></label>
+            <select id="hora" name="hora">
+              <option value="">Selecciona la hora</option>
+            </select>
+            <p class="campo__error" id="error-hora" role="alert"></p>
+          </div>
+
+          <div class="campo">
+            <label for="duracion">Duración <span class="obligatorio" aria-hidden="true">*</span></label>
+            <select id="duracion" name="duracion">
+              <option value="1">1 hora</option>
+              <option value="2">2 horas</option>
+            </select>
+            <p class="campo__error" id="error-duracion" role="alert"></p>
+          </div>
+
+          <div class="campo">
+            <label for="estado">Estado</label>
+            <select id="estado" name="estado">
+              <option value="Pendiente">Pendiente</option>
+              <option value="Pagada">Pagada</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <span class="campo__etiqueta-fija" id="etiqueta-total">Total a cobrar</span>
+            <p class="total-calculado" id="total-calculado" aria-live="polite" aria-labelledby="etiqueta-total">$ 0</p>
+          </div>
+
+          <div class="campo campo--ancho">
+            <label for="notas">Notas <span class="campo__opcional">(opcional)</span></label>
+            <textarea id="notas" name="notas" rows="2" maxlength="120" placeholder="Ejemplo: llevar balón propio"></textarea>
+            <p class="campo__ayuda"><span id="contador-notas">0</span>/120 caracteres</p>
+          </div>
+        </div>
+
+        <p class="aviso-conflicto" id="aviso-conflicto" hidden></p>
+
+        <footer class="modal__pie">
+          <button type="button" class="boton boton--secundario" data-cerrar-modal>Cancelar</button>
+          <button type="submit" class="boton boton--primario" id="btn-guardar">Guardar reserva</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- ---------------------------------------------------------- Modal eliminar -->
+  <div class="modal" id="modal-eliminar" hidden>
+    <div class="modal__fondo" data-cerrar-eliminar></div>
+    <div class="modal__caja modal__caja--angosta" role="alertdialog" aria-modal="true" aria-labelledby="titulo-eliminar" aria-describedby="texto-eliminar">
+      <header class="modal__cabecera">
+        <h2 id="titulo-eliminar">Eliminar reserva</h2>
+      </header>
+      <p id="texto-eliminar" class="modal__texto"></p>
+      <footer class="modal__pie">
+        <button type="button" class="boton boton--secundario" data-cerrar-eliminar>Cancelar</button>
+        <button type="button" class="boton boton--peligro" id="btn-confirmar-eliminar">Sí, eliminar</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="avisos" id="avisos" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/reservas.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
