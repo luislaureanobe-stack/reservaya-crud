@@ -5,6 +5,14 @@ Aplicación web para registrar, consultar, editar y eliminar reservas de canchas
 > Trabajo final del Seminario de Gestión de Software Ágil Asistido por IA.
 > La idea del ejercicio: **la IA propone, el humano verifica**.
 
+## Enlaces
+
+| | |
+|---|---|
+| **Video de demostración** | https://youtu.be/BsMef1BdYfo |
+| **Aplicación publicada** | https://luislaureanobe-stack.github.io/reservaya-crud/ |
+| **Repositorio** | https://github.com/luislaureanobe-stack/reservaya-crud |
+
 ---
 
 ## 1. Nombre del proyecto
